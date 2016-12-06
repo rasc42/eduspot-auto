@@ -2,7 +2,6 @@
 # (c) Phoenix, All rights reserved
 from bs4 import BeautifulSoup
 import getpass
-from time import sleep
 import requests
 
 s = requests.session()
@@ -45,3 +44,7 @@ print("Authentification finale au portail captif")
 s.post("https://univnautes.ensiie.fr/authsaml2/singleSignOnPost", {"SAMLResponse": token2})
 
 print("Vous êtes sensé être connecté à eduspot !")
+print("Vérification avec captive.apple.com")
+r = s.get("http://captive.apple.com")
+if "Success" in r.text:
+    print("Vérification terminée : vous êtes connecté à eduspot !")
