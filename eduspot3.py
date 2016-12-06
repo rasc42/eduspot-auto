@@ -5,53 +5,51 @@ import getpass
 from time import sleep
 import requests
 
-def cookiesjoin(cj1, cj2):
-    k = requests.utils.dict_from_cookiejar(cj2)
-    return requests.utils.add_dict_to_cookiejar(cj1, k)
+s = requests.session()
 
 print("Récupération du premier token")
-r = requests.get("https://univnautes.ensiie.fr/sso?entity_id=https://shibboleth.ensiie.fr/idp/shibboleth")
+
+r = s.get("https://univnautes.ensiie.fr/sso?entity_id=https://shibboleth.ensiie.fr/idp/shibboleth")
 soup = BeautifulSoup(r.text, 'html.parser')
 token1 = soup.find('input')['value']
-
-cookies = r.cookies
 
 sleep(1)
 print("Envoi du premier token à l'ENSIIE")
 
-j = requests.post("https://shibboleth.ensiie.fr/idp/profile/SAML2/POST/SSO", data = {"SAMLRequest": token1}, cookies = cookies)
+j = s.post("https://shibboleth.ensiie.fr/idp/profile/SAML2/POST/SSO", data = {"SAMLRequest": token1})
 
-cookies = cookiesjoin(cookies, j.cookies)
 
 print("Récupération du formulaire de connexion")
 sleep(1)
-r = requests.get("https://cas.ensiie.fr/login?service=https://shibboleth.ensiie.fr/idp/Authn/RemoteUser", cookies = cookies)
+r = s.get("https://cas.ensiie.fr/login?service=https://shibboleth.ensiie.fr/idp/Authn/RemoteUser")
 soup = BeautifulSoup(r.text, 'html.parser')
 urlpost = "https://cas.ensiie.fr" + soup.find('form')['action']
 
-cookies = cookiesjoin(cookies, r.cookies)
+inputs = soup.find_all('input')
+for i in inputs:
+    if (i['name'] == 'lt'):
+        lt = i['value']
+    if (i['name'] == 'execution'):
+        execution = i['value']
+
+print("fin de l'analyse")
 
 sleep(1)
-print(urlpost)
 print("Remplissage du formulaire de connexion")
 password = getpass.getpass("Entrez votre mot de passe : ")
 
-j = requests.post(urlpost, data={"username": "eliah.rebstock", "password": password}, cookies=cookies)
+payload = {'_eventId': 'submit', 'lt': lt, 'execution':execution, 'submit': 'LOGIN', 'username': 'eliah.rebstock', 'password': password}
+j = s.post(urlpost, data=payload)
 
-cookies = cookiesjoin(cookies, j.cookies)
-print(cookies)
+print(j.text)
 sleep(1)
-r = requests.get("https://shibboleth.ensiie.fr/idp/profile/SAML2/POST/SSO", cookies=cookies)
-print(r.text)
-soup = BeautifulSoup(r.text, 'html.parser')
+soup = BeautifulSoup(j.text, 'html.parser')
 token2 = soup.find('input')['value']
-
-cookies = cookiesjoin(cookies, r.cookies)
 
 sleep(1)
 print(token2)
 print("Authentification finale")
-requests.post("https://univnautes.ensiie.fr/authsaml2/singleSignOnPost", {"SAMLResponse", token2}, cookies=cookies)
+s.post("https://univnautes.ensiie.fr/authsaml2/singleSignOnPost", {"SAMLResponse": token2})
 
 sleep(1)
 print("Vous êtes sensé être connecté à eduspot !")
