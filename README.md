@@ -10,5 +10,5 @@ Script de connexion automatique au portail captif de eduspot (réseau wifi prés
 ## Utilisation ##
 
 ```
-    $ ./eduspot.py -p PASSWORD USERNAME
+    $ ./eduspot.py [-p PASSWORD] USERNAME
 ```
