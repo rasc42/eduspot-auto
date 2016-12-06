@@ -1,0 +1,14 @@
+INSTALL
+=======
+
+Ce script utilise Python 3 et utilise les librairies _requests_ et _BeautifulSoup_.
+
+Pour installer les librairies :
+
+```
+    $ pip install requests
+```
+
+```
+    $ pip install beautifulsoup4
+```
