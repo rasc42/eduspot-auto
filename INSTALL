@@ -9,3 +9,13 @@ To install the needed librairies on a *NIX system :
 ```
     $ pip install beautifulsoup4
 ```
+
+To install the needed librairies on a Windows system :
+
+```
+> py -m pip install requests
+```
+
+```
+> py -m pip install beautifulsoup4
+```
