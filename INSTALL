@@ -1,9 +1,6 @@
-INSTALL
-=======
+This script is run by Python 3 and use _requests_ and _BeautifulSoup_ librairies.
 
-Ce script utilise Python 3 et utilise les librairies _requests_ et _BeautifulSoup_.
-
-Pour installer les librairies :
+To install the needed librairies on a *NIX system :
 
 ```
     $ pip install requests
