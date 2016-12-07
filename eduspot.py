@@ -5,24 +5,21 @@ import requests
 import argparse
 
 def connect(username, password):
+    # Create a session to store all the needed cookies
     s = requests.session()
 
-    print("Récupération du premier token")
-
+    # Get the authentication token between the ENSIIE server and the captive portal
     r = s.get("https://univnautes.ensiie.fr/sso?entity_id=https://shibboleth.ensiie.fr/idp/shibboleth")
     soup = BeautifulSoup(r.text, 'html.parser')
     token1 = soup.find('input')['value']
 
-    print("Envoi du premier token à l'ENSIIE")
-
+    # Post it to ENSIIE server and retrieve ENSIIE CAS form
     j = s.post("https://shibboleth.ensiie.fr/idp/profile/SAML2/POST/SSO", data = {"SAMLRequest": token1})
-
-    print("Récupération et analyse du formulaire de connexion")
-
-    r = s.get("https://cas.ensiie.fr/login?service=https://shibboleth.ensiie.fr/idp/Authn/RemoteUser")
-    soup = BeautifulSoup(r.text, 'html.parser')
+    soup = BeautifulSoup(j.text, 'html.parser')
     urlpost = "https://cas.ensiie.fr" + soup.find('form')['action']
+    print("Remplissage du formulaire de connexion")
 
+    # Retrieve hidden inputs to post again
     inputs = soup.find_all('input')
     for i in inputs:
         if (i['name'] == 'lt'):
@@ -30,33 +27,30 @@ def connect(username, password):
         if (i['name'] == 'execution'):
             execution = i['value']
 
-    print("Fin de l'analyse")
-
-    print("Remplissage du formulaire de connexion")
+    # Ask for password if not given in parameter
     if not password:
         password = getpass.getpass("Entrez votre mot de passe : ")
 
+    # Authentication to ENSIIE CAS
     payload = {'_eventId': 'submit', 'lt': lt, 'execution':execution, 'submit': 'LOGIN', 'username': username, 'password': password}
     j = s.post(urlpost, data=payload)
 
+    # Retrieve the response token to send back to captive portal
     soup = BeautifulSoup(j.text, 'html.parser')
     token2 = soup.find('input')['value']
 
     print("Authentification finale au portail captif")
     s.post("https://univnautes.ensiie.fr/authsaml2/singleSignOnPost", {"SAMLResponse": token2})
 
-    print("Vous êtes sensé être connecté à eduspot !")
+    # Finally, make a test with a classic test website
     print("Vérification avec captive.apple.com")
     r = s.get("http://captive.apple.com")
     if "Success" in r.text:
         print("Vérification terminée : vous êtes connecté à eduspot !")
 
 parser = argparse.ArgumentParser(description='Connect to eduspot.')
-
-parser.add_argument("username", help="username of the user")
-
-parser.add_argument("-p", "--password", help="password of the user")
-
+parser.add_argument("username", help="Username of the user")
+parser.add_argument("-p", "--password", help="Password of the user")
 args = parser.parse_args()
 
 connect(args.username, args.password)
