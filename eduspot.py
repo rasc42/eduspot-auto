@@ -27,16 +27,24 @@ def connect(username, password):
         if (i['name'] == 'execution'):
             execution = i['value']
 
-    # Ask for password if not given in parameter
-    if not password:
-        password = getpass.getpass("Entrez votre mot de passe : ")
+    # While authentication is not done
+    while (True):
+        # Ask for password if not given in parameter
+        if not password:
+            password = getpass.getpass("Entrez votre mot de passe : ")
 
-    # Authentication to ENSIIE CAS
-    payload = {'_eventId': 'submit', 'lt': lt, 'execution':execution, 'submit': 'LOGIN', 'username': username, 'password': password}
-    j = s.post(urlpost, data=payload)
+        # Authentication to ENSIIE CAS
+        payload = {'_eventId': 'submit', 'lt': lt, 'execution':execution, 'submit': 'LOGIN', 'username': username, 'password': password}
+        j = s.post(urlpost, data=payload)
+        soup = BeautifulSoup(j.text, 'html.parser')
+
+        # Check if the authentication failed or not
+        if soup.title and 'CAS' in soup.title.text:
+            password = ""
+        else:
+            break
 
     # Retrieve the response token to send back to captive portal
-    soup = BeautifulSoup(j.text, 'html.parser')
     token2 = soup.find('input')['value']
 
     print("Authentification finale au portail captif")
