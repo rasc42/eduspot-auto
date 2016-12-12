@@ -10,10 +10,10 @@ Connection script to log faster to eduspot captive portal with GET and POST requ
 ## Usage ##
 
 ```
-    $ eduspot.py [-h] [-p PASSWORD] USERNAME
+    $ eduspot.py [-h] [-u USERNAME] [-p PASSWORD]
 ```
 
-If no password is given to the script, it will be asked during runtime.
+If no username or password is given to the script, it will be asked during runtime.
 
 * * *
 
@@ -29,7 +29,7 @@ Script de connexion rapide au portail captif de eduspot en envoyant des requête
 ## Utilisation ##
 
 ```
-    $ eduspot.py [-h] [-p PASSWORD] USERNAME
+    $ eduspot.py [-h] [-u USERNAME] [-p PASSWORD]
 ```
 
-Si le mot de passe n'est pas donné au script, il sera demandé à l'exécution.
+Si le nom d'utilisateur ou le mot de passe n'est pas donné au script, il sera demandé à l'exécution.
