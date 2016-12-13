@@ -9,7 +9,12 @@ def connect(username, password):
     s = requests.session()
 
     # Get the authentication token between the ENSIIE server and the captive portal
-    r = s.get('https://univnautes.ensiie.fr/sso?entity_id=https://shibboleth.ensiie.fr/idp/shibboleth')
+    try:
+        r = s.get('https://univnautes.ensiie.fr/sso?entity_id=https://shibboleth.ensiie.fr/idp/shibboleth')
+    except requests.exceptions.ConnectionError:
+        print("Connexion refusée. Êtes-vous bien connecté à eduspot @ ENSIIE ?")
+        exit(1)
+
     soup = BeautifulSoup(r.text, 'html.parser')
     token1 = soup.find('input')['value']
 
