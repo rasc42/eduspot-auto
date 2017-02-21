@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import getpass
 import requests
 import argparse
+import sys
 
 def connect(username, password):
     # Create a session to store all the needed cookies
@@ -22,7 +23,6 @@ def connect(username, password):
     j = s.post('https://shibboleth.ensiie.fr/idp/profile/SAML2/POST/SSO', data = {'SAMLRequest': token1})
     soup = BeautifulSoup(j.text, 'html.parser')
     urlpost = 'https://cas.ensiie.fr' + soup.find('form')['action']
-    print('Remplissage du formulaire de connexion')
 
     # Retrieve hidden inputs to post again
     inputs = soup.find_all('input')
@@ -34,12 +34,14 @@ def connect(username, password):
 
     # While authentication is not done
     while (True):
+        if username:
+            print("Username : " + username)
         # Ask for username if not given in parameter
         if not username:
             username = input("Nom d'utilisateur : ")
         # Ask for password if not given in parameter
         if not password:
-            password = getpass.getpass('Entrez votre mot de passe : ')
+            password = getpass.getpass('Entrez votre mot de passe ENSIIE : ')
 
         # Authentication to ENSIIE CAS
         payload = {'_eventId': 'submit', 'lt': lt, 'execution':execution, 'submit': 'LOGIN', 'username': username, 'password': password}
@@ -55,14 +57,14 @@ def connect(username, password):
     # Retrieve the response token to send back to captive portal
     token2 = soup.find('input')['value']
 
-    print('Authentification finale au portail captif')
+    print('Authentification réussie')
     s.post('https://univnautes.ensiie.fr/authsaml2/singleSignOnPost', {'SAMLResponse': token2})
 
     # Finally, make a test with a classic test website
-    print('Vérification avec captive.apple.com')
+    sys.stdout.write('Vérification de la connexion')
     r = s.get('http://captive.apple.com')
     if 'Success' in r.text:
-        print('Vérification terminée : vous êtes connecté à eduspot !')
+        sys.stdout.write('\rVérification terminée : vous êtes connecté à eduspot !\n')
 
 parser = argparse.ArgumentParser(description='Connect to eduspot.')
 parser.add_argument('-u', '--username', help='Username of the user')
