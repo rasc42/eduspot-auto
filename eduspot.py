@@ -4,6 +4,7 @@ import getpass
 import requests
 import argparse
 import sys
+import os
 
 def connect(username, password):
     # Create a session to store all the needed cookies
@@ -71,4 +72,11 @@ parser.add_argument('-u', '--username', help='Username of the user')
 parser.add_argument('-p', '--password', help='Password of the user')
 args = parser.parse_args()
 
-connect(args.username, args.password)
+try:
+    connect(args.username, args.password)
+except KeyboardInterrupt:
+    print('\nInterrupted')
+    try:
+        sys.exit(0)
+    except SystemExit:
+        os._exit(0)
