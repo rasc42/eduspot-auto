@@ -10,6 +10,14 @@ def connect(username, password):
     # Create a session to store all the needed cookies
     s = requests.session()
 
+    # First, let's try to connect to a sample website
+    r = s.get('http://captive.apple.com')
+    if 'Success' in r.text:
+        print('Vous êtes déjà connecté à Internet !')
+        exit(0)
+    # If there is no 'Success', it means we have arrived on the
+    # captive portal instead of the website we want
+
     # Get the authentication token between the ENSIIE server and the captive portal
     try:
         r = s.get('https://univnautes.ensiie.fr/sso?entity_id=https://shibboleth.ensiie.fr/idp/shibboleth')
