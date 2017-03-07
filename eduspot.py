@@ -5,6 +5,8 @@ import requests
 import argparse
 import sys
 import os
+import subprocess
+from tempfile import TemporaryFile
 
 def connect(username, password):
     # Create a session to store all the needed cookies
@@ -70,18 +72,31 @@ def connect(username, password):
     s.post('https://univnautes.ensiie.fr/authsaml2/singleSignOnPost', {'SAMLResponse': token2})
 
     # Finally, make a test with a classic test website
-    sys.stdout.write('Vérification de la connexion')
     r = s.get('http://captive.apple.com')
     if 'Success' in r.text:
-        sys.stdout.write('\rVérification terminée : vous êtes connecté à eduspot !\n')
+        print('Vérification terminée : vous êtes connecté à eduspot !')
 
 parser = argparse.ArgumentParser(description='Connect to eduspot.')
 parser.add_argument('-u', '--username', help='Username of the user')
 parser.add_argument('-p', '--password', help='Password of the user')
 args = parser.parse_args()
 
+def ssid_check():
+    if (sys.platform.startswith('linux')):
+        # Hoping wireless-tools is installed
+        tmp = TemporaryFile(mode="w+")
+        subprocess.run(["iwgetid", "-r"], stdout=tmp)
+        tmp.seek(0)
+        return ("eduspot" in tmp.read())
+    # Skip test for other platforms
+    return true
+
 try:
-    connect(args.username, args.password)
+    if (ssid_check()):
+        connect(args.username, args.password)
+    else:
+        # On linux and the ssid-check doesn't pass
+        print("Vous n'êtes pas connecté à eduspot.")
 except KeyboardInterrupt:
     print('\nInterrupted')
     try:
